@@ -1,18 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>date</title>
+    <title>Date</title>
     <link rel="stylesheet" href="style.css">
-  </head>
-  <body>
-    <h1>LETS GO ON A DATE?</h1>
+    <style>
+        /* Basic styling for buttons */
+        .button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background: linear-gradient(135deg, #FF6F91, #FF8E53);
+            color: white;
+            transition: transform 0.3s, background 0.3s;
+        }
+
+        /* Pop animation for the Yes button */
+        @keyframes pop {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .button.pop {
+            animation: pop 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <h1>LET'S GO ON A DATE?</h1>
+
     <div>
-      <button>Yes</button>
+        <button id="yesBtn" class="button">Yes</button>
     </div>
     <div>
-        <button>No</button>
+        <button id="noBtn" class="button">No</button>
     </div>
-  </body>
+
+    <script>
+        // Function to check if the device is mobile
+        function isMobileDevice() {
+            return /Mobi|Android/i.test(navigator.userAgent);
+        }
+
+        // Handle the "No" button for PC users (mouseover)
+        const noButton = document.getElementById('noBtn');
+        if (!isMobileDevice()) {
+            noButton.addEventListener('mouseover', function() {
+                // Generate random positions within the window's bounds
+                const maxWidth = window.innerWidth - this.offsetWidth;
+                const maxHeight = window.innerHeight - this.offsetHeight;
+
+                // Calculate new random positions
+                const randomX = Math.random() * maxWidth;
+                const randomY = Math.random() * maxHeight;
+
+                // Move the button to the new random position
+                this.style.position = 'absolute';
+                this.style.left = `${randomX}px`;
+                this.style.top = `${randomY}px`;
+            });
+        } else {
+            // Handle the "No" button for mobile users (touch)
+            noButton.addEventListener('touchstart', function() {
+                // Make the Yes button grow larger
+                const yesButton = document.getElementById('yesBtn');
+                yesButton.style.transform = 'scale(1.2)'; // Grow the Yes button
+
+                // Make the No button shrink and move
+                this.style.transform = 'scale(0.8)'; // Shrink the No button
+
+                // Move the No button to a new random position
+                const maxWidth = window.innerWidth - this.offsetWidth;
+                const maxHeight = window.innerHeight - this.offsetHeight;
+
+                const randomX = Math.random() * maxWidth;
+                const randomY = Math.random() * maxHeight;
+
+                this.style.position = 'absolute';
+                this.style.left = `${randomX}px`;
+                this.style.top = `${randomY}px`;
+            });
+
+            // Reset sizes after a short delay
+            noButton.addEventListener('click', function() {
+                // Reset the scale of the buttons
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)'; // Reset No button
+                    const yesButton = document.getElementById('yesBtn');
+                    yesButton.style.transform = 'scale(1)'; // Reset Yes button
+                }, 300); // Adjust the timing to your preference
+            });
+        }
+
+        // Function to handle the "pop" animation for the "Yes" button
+        const yesButton = document.getElementById('yesBtn');
+        yesButton.addEventListener('click', function() {
+            // Add pop class for animation
+            this.classList.add('pop');
+
+            // Show alert with the purple heart emoji
+            setTimeout(() => {
+                alert("💜 Yay! Let's plan the date! 💜");
+            }, 300); // Wait for the animation to finish before showing the alert
+
+            // Remove the pop class after the animation
+            setTimeout(() => {
+                this.classList.remove('pop');
+            }, 600); // Adjust timing to match the animation duration
+        });
+    </script>
+</body>
 </html>
