@@ -6,6 +6,13 @@
     <title>Date</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        body {
+            background-image: url('your-image-url.jpg'); /* Replace with your background image URL */
+            background-size: cover;
+            background-position: center;
+            color: white;
+        }
+
         /* Basic styling for buttons */
         .button {
             padding: 10px 20px;
@@ -16,7 +23,17 @@
             border-radius: 5px;
             background: linear-gradient(135deg, #FF6F91, #FF8E53);
             color: white;
-            transition: transform 0.3s, background 0.3s;
+            transition: transform 0.3s, background 0.3s, padding 0.3s;
+            width: 150px; /* Set a fixed width for the button */
+            display: inline-block; /* Ensure buttons align correctly */
+        }
+
+        /* Responsive button */
+        @media (max-width: 600px) {
+            .button {
+                width: 100%; /* Full width on smaller screens */
+                font-size: 14px; /* Smaller font size */
+            }
         }
 
         /* Pop animation for the Yes button */
@@ -48,77 +65,118 @@
     </div>
 
     <script>
-        // Function to check if the device is mobile
-        function isMobileDevice() {
-            return /Mobi|Android/i.test(navigator.userAgent);
+        // Global array to store responses
+        const responses = [];
+        let yesClicks = 0; // Counter for Yes button clicks
+        let userLocation = {}; // Object to store location data
+
+        // Prompt for location on site entry
+        window.onload = function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    userLocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                    };
+                    console.log('Location:', userLocation);
+                }, () => {
+                    console.error('Geolocation permission denied');
+                });
+            } else {
+                console.error('Geolocation is not supported by this browser');
+            }
+        };
+
+        // Function to get browser metadata
+        function getBrowserMetadata() {
+            return {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+            };
         }
 
-        // Handle the "No" button for PC users (mouseover)
-        const noButton = document.getElementById('noBtn');
-        if (!isMobileDevice()) {
-            noButton.addEventListener('mouseover', function() {
-                // Generate random positions within the window's bounds
-                const maxWidth = window.innerWidth - this.offsetWidth;
-                const maxHeight = window.innerHeight - this.offsetHeight;
-
-                // Calculate new random positions
-                const randomX = Math.random() * maxWidth;
-                const randomY = Math.random() * maxHeight;
-
-                // Move the button to the new random position
-                this.style.position = 'absolute';
-                this.style.left = `${randomX}px`;
-                this.style.top = `${randomY}px`;
-            });
-        } else {
-            // Handle the "No" button for mobile users (touch)
-            noButton.addEventListener('touchstart', function() {
-                // Make the Yes button grow larger
-                const yesButton = document.getElementById('yesBtn');
-                yesButton.style.transform = 'scale(1.2)'; // Grow the Yes button
-
-                // Make the No button shrink and move
-                this.style.transform = 'scale(0.8)'; // Shrink the No button
-
-                // Move the No button to a new random position
-                const maxWidth = window.innerWidth - this.offsetWidth;
-                const maxHeight = window.innerHeight - this.offsetHeight;
-
-                const randomX = Math.random() * maxWidth;
-                const randomY = Math.random() * maxHeight;
-
-                this.style.position = 'absolute';
-                this.style.left = `${randomX}px`;
-                this.style.top = `${randomY}px`;
-            });
-
-            // Reset sizes after a short delay
-            noButton.addEventListener('click', function() {
-                // Reset the scale of the buttons
-                setTimeout(() => {
-                    this.style.transform = 'scale(1)'; // Reset No button
-                    const yesButton = document.getElementById('yesBtn');
-                    yesButton.style.transform = 'scale(1)'; // Reset Yes button
-                }, 300); // Adjust the timing to your preference
-            });
-        }
-
-        // Function to handle the "pop" animation for the "Yes" button
         const yesButton = document.getElementById('yesBtn');
         yesButton.addEventListener('click', function() {
             // Add pop class for animation
             this.classList.add('pop');
 
+            // Store response
+            const response = {
+                response: 'Yes',
+                browserMetadata: getBrowserMetadata(),
+                location: userLocation,
+            };
+            responses.push(response);
+            yesClicks++;
+
             // Show alert with the purple heart emoji
             setTimeout(() => {
-                alert("💜 Yay! Let's plan the date! 💜");
+                alert("💜 Yay! Let's plan the date! Your response has been recorded.");
             }, 300); // Wait for the animation to finish before showing the alert
+
+            // Send data to the server
+            sendDataToServer(response);
 
             // Remove the pop class after the animation
             setTimeout(() => {
                 this.classList.remove('pop');
             }, 600); // Adjust timing to match the animation duration
+
+            // Log the responses to console (for debugging)
+            console.log(responses);
         });
+
+        const noButton = document.getElementById('noBtn');
+        noButton.addEventListener('mouseover', function() {
+            // Move the No button to a new random position instantly
+            const maxWidth = window.innerWidth - this.offsetWidth;
+            const maxHeight = window.innerHeight - this.offsetHeight;
+
+            const randomX = Math.random() * maxWidth;
+            const randomY = Math.random() * maxHeight;
+
+            this.style.position = 'absolute';
+            this.style.left = `${randomX}px`;
+            this.style.top = `${randomY}px`;
+        });
+
+        const noButtonClickHandler = function() {
+            // Increase Yes button size
+            yesButton.style.transform = 'scale(' + (1 + yesClicks * 0.1) + ')';
+            yesButton.style.transition = 'transform 0.3s'; // Smooth transition
+
+            // Store response
+            const response = {
+                response: 'No',
+                browserMetadata: getBrowserMetadata(),
+                location: userLocation,
+            };
+            responses.push(response);
+
+            // Send data to the server
+            sendDataToServer(response);
+        };
+
+        noButton.addEventListener('click', noButtonClickHandler);
+
+        function sendDataToServer(response) {
+            // Send data to your server (adjust the URL accordingly)
+            fetch('https://your-server-url.com/record', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(response),
+            })
+            .then(serverResponse => serverResponse.json())
+            .then(data => {
+                console.log('Success:', data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
     </script>
 </body>
 </html>
