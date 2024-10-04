@@ -12,7 +12,6 @@
             background-position: center;
             color: white;
         }
-
         /* Basic styling for buttons */
         .button {
             padding: 10px 20px;
@@ -128,8 +127,18 @@
         });
 
         const noButton = document.getElementById('noBtn');
-        noButton.addEventListener('mouseover', function() {
-            // Move the No button to a new random position instantly
+        noButton.addEventListener('click', function() {
+            // Make the Yes button grow larger
+            yesButton.style.transform = 'scale(' + (1 + yesClicks * 0.1) + ')'; // Increase size
+            yesButton.style.transition = 'transform 0.3s'; // Smooth transition
+
+            // Smooth dodging effect for No button
+            this.style.transition = 'all 0.5s ease'; // Smooth transition
+
+            // Shrink the No button
+            this.style.transform = 'scale(0.8)';
+
+            // Move the No button to a new random position
             const maxWidth = window.innerWidth - this.offsetWidth;
             const maxHeight = window.innerHeight - this.offsetHeight;
 
@@ -139,12 +148,6 @@
             this.style.position = 'absolute';
             this.style.left = `${randomX}px`;
             this.style.top = `${randomY}px`;
-        });
-
-        const noButtonClickHandler = function() {
-            // Increase Yes button size
-            yesButton.style.transform = 'scale(' + (1 + yesClicks * 0.1) + ')';
-            yesButton.style.transition = 'transform 0.3s'; // Smooth transition
 
             // Store response
             const response = {
@@ -156,13 +159,10 @@
 
             // Send data to the server
             sendDataToServer(response);
-        };
-
-        noButton.addEventListener('click', noButtonClickHandler);
+        });
 
         function sendDataToServer(response) {
-            // Send data to your server (adjust the URL accordingly)
-            fetch('https://your-server-url.com/record', {
+            fetch('http://localhost:3000/record', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
